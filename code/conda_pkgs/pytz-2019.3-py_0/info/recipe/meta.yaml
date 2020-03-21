@@ -1,0 +1,64 @@
+# This file created by conda-build 3.18.9
+# meta.yaml template originally from:
+# /tmp/build/80754af9/rsync-recipes/pytz-2019.3-on-linux_64, last modified Mon Oct  7 15:29:18 2019
+# ------------------------------------------------
+
+package:
+    name: pytz
+    version: '2019.3'
+source:
+    sha256: b02c06db6cf09c12dd25137e563b31700d3b80fcc4ad23abb7a315f2789819be
+    url: https://pypi.io/packages/source/p/pytz/pytz-2019.3.tar.gz
+build:
+    noarch: python
+    number: '0'
+    script: /tmp/build/80754af9/pytz_1570462704696/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold/bin/python
+        -m pip install . --no-deps -vv
+    string: py_0
+requirements:
+    host:
+        - _libgcc_mutex 0.1 main
+        - ca-certificates 2019.8.28 0
+        - certifi 2019.9.11 py27_0
+        - libedit 3.1.20181209 hc058e9b_0
+        - libffi 3.2.1 hd88cf55_4
+        - libgcc-ng 9.1.0 hdf63c60_0
+        - libstdcxx-ng 9.1.0 hdf63c60_0
+        - ncurses 6.1 he6710b0_1
+        - openssl 1.1.1d h7b6447c_2
+        - pip 19.2.3 py27_0
+        - python 2.7.16 h9bab390_7
+        - readline 7.0 h7b6447c_5
+        - setuptools 41.4.0 py27_0
+        - sqlite 3.30.0 h7b6447c_0
+        - tk 8.6.8 hbc83047_0
+        - wheel 0.33.6 py27_0
+        - zlib 1.2.11 h7b6447c_3
+    run:
+        - python
+test:
+    imports:
+        - pytz
+about:
+    description: 'pytz brings the Olson tz database into Python. This library allows
+
+        accurate and cross platform timezone calculations using Python 2.4 or
+
+        higher. It also solves the issue of ambiguous times at the end of daylight
+
+        saving time.
+
+        '
+    dev_url: https://github.com/newvem/pytz
+    doc_source_url: https://github.com/newvem/pytz/blob/master/README.txt
+    doc_url: http://pythonhosted.org/pytz/
+    home: http://pythonhosted.org/pytz/
+    license: MIT
+    license_file: LICENSE.txt
+    summary: World timezone definitions, modern and historical.
+extra:
+    copy_test_source_files: true
+    final: true
+    recipe-maintainers:
+        - msarahan
+        - ocefpaf
