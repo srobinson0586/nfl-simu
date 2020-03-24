@@ -6,9 +6,9 @@ from sklearn.model_selection import train_test_split
 
 class Model():
 	def __init__(self, split=0.2):
-		pass
+		self.data = generate_data(self.__class__.__name__)	
 
-	def train_model(self, epochs):
+	def train_model(self):
 		pass
 
 	def generate_buckets(self):
@@ -67,16 +67,13 @@ class Model():
 # OutcomeModel is a neural network that, given the state of the game at the 
 # beginning of a drive, will predict the outcome of the drive.
 #######################################
-class OutcomeModel(Model):
-	def __init__(self, split=0.2):
-		self.data = generate_data()
-		self.train, self.test =  train_test_split(self.data, test_size=split, random_state=0)
-		self.model = Sequential()		
-
+class OutcomeModel(Model):	
 	def train_model(self, epochs):
+		self.train, self.test =  train_test_split(self.data, test_size=split, random_state=0)
+		self.model = Sequential()
 		x_train = self.train.drop(columns=['y'])
 		y_train = np.stack(self.train['y'])
-		self.model.add(Dense(70, activation='relu', input_dim=x_train.shape[1]))
+		self.model.add(Dense(80, activation='relu', input_dim=x_train.shape[1]))
 		self.model.add(Dropout(0.1))
 		self.model.add(Dense(70, activation='relu'))
 		self.model.add(Dense(len(y_train[0]), activation='softmax'))
@@ -89,15 +86,10 @@ class OutcomeModel(Model):
 # YardDistributionModel is a neural network that, given the state of the game at a fourth
 #down, will predict the yards gained by the offense at that point.
 #######################################
-class YardDistributionModel(Model):
-	def __init__(self, split=0.2):
-		self.data = generate_data(True)
-		self.train, self.test =  train_test_split(self.data, test_size=split, random_state=0)
-		self.train = self.train.dropna()
-		self.test = self.test.dropna()
-		self.model = Sequential()
-	
+class YardDistributionModel(Model):	
 	def train_model(self, epochs):
+		self.train, self.test =  train_test_split(self.data, test_size=split, random_state=0)
+		self.model = Sequential()
 		x_train = self.train.drop(columns=['y'])
 		y_train = np.stack(self.train['y'])
 		self.model.add(Dense(70, activation='relu', input_dim=x_train.shape[1]))
@@ -108,4 +100,89 @@ class YardDistributionModel(Model):
 	          loss='categorical_crossentropy',
 	          metrics=['accuracy'])
 		self.model.fit(x_train, y_train, epochs=epochs)
+
+class TimeRunoffModel(Model):
+	def __init__(self):
+		raise NotImplementedError 
+
+	def train_model(self, epochs):
+		raise NotImplementedError
+
+class TurnoverFieldPosModel(Model):
+	def __init__(self):
+		raise NotImplementedError 
+
+	def train_model(self, epochs):
+		raise NotImplementedError
+
+class FieldGoalModel(Model):
+	def train_model(self):
+		#          
+		attempts = {"11-20":0,"21-30":0,"31-40":0,"41-50":0,"51-60":0, "61+":0}
+		made     = {"11-20":0,"21-30":0,"31-40":0,"41-50":0,"51-60":0, "61+":0}
+		for y in self.data['y']:
+			y = int(y)
+			if abs(y) <= 20:
+				attempts["11-20"] += 1
+				if y > 0:
+					made["11-20"] += 1
+			elif abs(y) <= 30:
+				attempts["21-30"] += 1
+				if y > 0:
+					made["21-30"] += 1
+			elif abs(y) <= 40:
+				attempts["31-40"] += 1
+				if y > 0:
+					made["31-40"] += 1
+			elif abs(y) <= 50:
+				attempts["41-50"] += 1
+				if y > 0:
+					made["41-50"] += 1
+			elif abs(y) <= 60:
+				attempts["51-60"] += 1
+				if y > 0:
+					made["51-60"] += 1
+			else:
+				attempts["61+"] += 1
+				if y > 0:
+					made["61+"] += 1
+		self.model = {}
+		for key in attempts:
+			self.model[key] = made[key] / attempts[key]
+
+
+	def evaluate(self):
+		print("*****************")
+		print(self.__class__.__name__)
+		print("*****************")
+		for key in self.model:
+			print("Category: " + key + ", Percentage: %.2f%%" % (self.model[key] * 100))
+
+
+class SmallYardDistributionModel(Model):
+	def train_model(self):
+		groups = {}
+		yards = {}
+		self.model = {}
+		for y in self.data['y']:
+			y = int(y)
+			group = int(y / 10)
+			if group not in groups:
+				groups[group] = 0
+				yards[group] = [0] * 10
+			
+			groups[group] += 1
+			yards[group][y % 10] += 1
+		for key in yards:
+			self.model[key] = [x / groups[key] for x in yards[key]]
+
+
+	def evaluate(self):
+		print("*****************")
+		print(self.__class__.__name__)
+		print("*****************")
+		for key in self.model:
+			print("Catergory: %d-%d yds:" % (key * 10, key * 10 + 10))
+			print (["{0:0.2f}".format(i) for i in self.model[key]])
+
 		
