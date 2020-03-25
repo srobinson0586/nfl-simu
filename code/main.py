@@ -12,9 +12,9 @@ os.environ["CUDA_VISIBLE_DEVICES"]="-1"
 # yd.generate_buckets()
 # yd.evaluate()
 
-# fg = FieldGoalModel()
-# fg.train_model()
-# fg.evaluate()
+fg = FieldGoalModel()
+fg.train_model()
+fg.evaluate()
 
 # sm = SmallYardDistributionModel()
 # sm.train_model()

@@ -1,4 +1,5 @@
 import numpy as np
+import math
 from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.models import Sequential
 from process import generate_data
@@ -117,35 +118,20 @@ class TurnoverFieldPosModel(Model):
 
 class FieldGoalModel(Model):
 	def train_model(self):
-		#          
-		attempts = {"11-20":0,"21-30":0,"31-40":0,"41-50":0,"51-60":0, "61+":0}
-		made     = {"11-20":0,"21-30":0,"31-40":0,"41-50":0,"51-60":0, "61+":0}
+		attempts = {}
+		made = {}
+		for i in range(15,70,5):
+			attempts[i] = 0
+			made[i] = 0
+
 		for y in self.data['y']:
 			y = int(y)
-			if abs(y) <= 20:
-				attempts["11-20"] += 1
-				if y > 0:
-					made["11-20"] += 1
-			elif abs(y) <= 30:
-				attempts["21-30"] += 1
-				if y > 0:
-					made["21-30"] += 1
-			elif abs(y) <= 40:
-				attempts["31-40"] += 1
-				if y > 0:
-					made["31-40"] += 1
-			elif abs(y) <= 50:
-				attempts["41-50"] += 1
-				if y > 0:
-					made["41-50"] += 1
-			elif abs(y) <= 60:
-				attempts["51-60"] += 1
-				if y > 0:
-					made["51-60"] += 1
-			else:
-				attempts["61+"] += 1
-				if y > 0:
-					made["61+"] += 1
+			y = min(y, 65)
+			y = max(y, -65)
+			attempts[5* math.floor(abs(y) / 5)] += 1
+			if y > 0:
+				made[5 * math.floor(abs(y) / 5)] += 1
+
 		self.model = {}
 		for key in attempts:
 			self.model[key] = made[key] / attempts[key]
@@ -156,7 +142,10 @@ class FieldGoalModel(Model):
 		print(self.__class__.__name__)
 		print("*****************")
 		for key in self.model:
-			print("Category: " + key + ", Percentage: %.2f%%" % (self.model[key] * 100))
+			if key == 65:
+				print("Category: 65+, Percentage: %.2f%%" % ( self.model[key] * 100))
+			else:
+				print("Category: %d-%d, Percentage: %.2f%%" % (key, key + 5, self.model[key] * 100))
 
 
 class SmallYardDistributionModel(Model):
