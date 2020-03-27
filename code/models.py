@@ -69,11 +69,13 @@ class Model():
 # beginning of a drive, will predict the outcome of the drive.
 #######################################
 class OutcomeModel(Model):	
-	def train_model(self, epochs):
-		self.train, self.test =  train_test_split(self.data, test_size=split, random_state=0)
+	def train_model(self, epochs, split=0.2):
+		self.train, self.test = train_test_split(self.data, test_size=split, random_state=0)
 		self.model = Sequential()
 		x_train = self.train.drop(columns=['y'])
 		y_train = np.stack(self.train['y'])
+		print(x_train)
+		print(y_train)
 		self.model.add(Dense(80, activation='relu', input_dim=x_train.shape[1]))
 		self.model.add(Dropout(0.1))
 		self.model.add(Dense(70, activation='relu'))

@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import csv
 import os
-from itertools import tee 
 
 def generate_data(variant):
 	from sklearn.preprocessing import LabelEncoder
@@ -29,7 +28,7 @@ def generate_data(variant):
 		y = list(labels)
 		
 	data.insert(data.shape[1], "y", y, False)
-	data = data.drop(columns=['result', 'yds_gained / 10', 'actual_yds_gained', 'field_goal_distance', 'field_goal_attempt'])
+	data = data.drop(columns=['result', 'yds_gained / 10', 'actual_yds_gained', 'field_goal_distance', 'field_goal_attempt','field_goal_distance', 'punt_attempt', 'punt_distance_from_goalline', 'turnover_delta_field_pos', 'time_runoff'])
 	return data
 
 if __name__ == '__main__':	
