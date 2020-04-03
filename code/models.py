@@ -11,7 +11,7 @@ from keras.utils import np_utils
 
 class Model():
     def __init__(self, split=0.2):
-        self.data = generate_data(self.__class__.__name__)
+        self.data, self.classes = generate_data(self.__class__.__name__)
 
     def train_model(self, epochs, split=0.2):
         self.train, self.test = train_test_split(
@@ -33,8 +33,6 @@ class Model():
         self.buckets = []
         # plays with less than two minutes left in the half
         self.buckets.append(('all', self.test))
-        temp = self.test[self.test['UTM'].isin(['1'])]
-        self.buckets.append(('under two minutes', temp))
         # plays with different field positions
         temp = self.test[(self.test['field_pos'] >= 20) &
                          (self.test['field_pos'] < 30)]
@@ -93,6 +91,8 @@ class Model():
                 mse += (predicted[j] - actual[j]) ** 2
             print(b[0], mse / y.shape[1])
 
+    def predict(self,state):
+        return self.model.predict(np.array([state,]))[0]
 #######################################
 # OutcomeModel is a neural network that, given the state of the game at the
 # beginning of a drive, will predict the outcome of the drive.

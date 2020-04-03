@@ -10,7 +10,8 @@ def generate_data(variant):
     drop = ['result', 'yds_gained / 10', 'actual_yds_gained', 'field_goal_distance', 'field_goal_attempt',
                          'field_goal_distance', 'punt_attempt', 'punt_distance_from_goalline', 'field_pos_at_punt', 'turnover_delta_field_pos', 'time_runoff']
     data = pd.read_csv("../data/drive_data.csv")
-    data = data.drop(columns=['game_id', 'drive_number'])
+    data = data.drop(columns=['game_id', 'drive_number', 'UTM', 'pos_team TOL', 'def_team TOL'])
+    classes = None
     if variant == "YardDistributionModel":
         data = data[data['result'].isin(['fourth_down'])]
         y = data['yds_gained / 10']
@@ -24,7 +25,7 @@ def generate_data(variant):
         data = data[data['punt_attempt'].isin(['1'])]
     
         y = data['punt_distance_from_goalline']
-        data = data.drop(columns=['field_pos', 'time_remaining', 'is_half_one', 'is_half_two', 'UTM', 'score_differential', 'pos_team TOL', 'def_time TOL'])
+        data = data.drop(columns=['field_pos', 'time_remaining', 'is_half_one', 'is_half_two', 'score_differential'])
         drop = ['result', 'yds_gained / 10', 'actual_yds_gained', 'field_goal_distance', 'field_goal_attempt',
                          'field_goal_distance', 'punt_attempt', 'punt_distance_from_goalline', 'turnover_delta_field_pos', 'time_runoff']
     elif variant == 'TimeRunoffModel':
@@ -47,10 +48,11 @@ def generate_data(variant):
         encoded_y = encoder.transform(y)           
         labels = np_utils.to_categorical(encoded_y)
         y = list(labels)
+        classes = encoder.classes_
 
     data.insert(data.shape[1], "y", y, False)
     data = data.drop(columns=drop)
-    return data
+    return data, classes
 
 
 if __name__ == '__main__':
@@ -70,7 +72,7 @@ if __name__ == '__main__':
 
     with open('../data/drive_data.csv', mode='w') as data_file:
         writer = csv.writer(data_file, delimiter=',', quotechar='"')
-        writer.writerow(['game_id', 'drive_number', 'field_pos', 'time_remaining', 'is_half_one', 'is_half_two', 'UTM', 'score_differential', 'pos_team TOL', 'def_time TOL', 'result', 'yds_gained / 10', 'actual_yds_gained', 'field_goal_attempt', 'field_goal_distance', 'punt_attempt', 'field_pos_at_punt', 'punt_distance_from_goalline', 'turnover_delta_field_pos', 'time_runoff'])
+        writer.writerow(['game_id', 'drive_number', 'field_pos', 'time_remaining', 'is_half_one', 'is_half_two', 'UTM', 'score_differential', 'pos_team TOL', 'def_team TOL', 'result', 'yds_gained / 10', 'actual_yds_gained', 'field_goal_attempt', 'field_goal_distance', 'punt_attempt', 'field_pos_at_punt', 'punt_distance_from_goalline', 'turnover_delta_field_pos', 'time_runoff'])
         for filename in os.listdir('../data'):
 
             if filename != "drive_data.csv" and filename[0] != '.':
