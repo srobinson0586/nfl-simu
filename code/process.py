@@ -23,6 +23,7 @@ def generate_data(variant):
         y = data['field_goal_distance']
     elif variant == 'PuntModel':
         data = data[data['punt_attempt'].isin(['1'])]
+        data = data[data['punt_distance_from_goalline'] <= 18]
     
         y = data['punt_distance_from_goalline']
         data = data.drop(columns=['field_pos', 'time_remaining', 'is_half_one', 'is_half_two', 'score_differential'])
@@ -30,9 +31,9 @@ def generate_data(variant):
                          'field_goal_distance', 'punt_attempt', 'punt_distance_from_goalline', 'turnover_delta_field_pos', 'time_runoff']
     elif variant == 'TimeRunoffModel':
     
-        data = data[data['time_runoff'] <= 20]
-        dummies = pd.get_dummies(data['result'])
-        data = pd.concat([data, dummies], axis=1)
+        data = data[(data['time_runoff'] <= 20) & (data['time_runoff'] >= 0)]
+#         dummies = pd.get_dummies(data['result'])
+#         data = pd.concat([data, dummies], axis=1)
         y = data['time_runoff']
         
     elif variant == 'TurnoverFieldPosModel':
@@ -98,7 +99,7 @@ if __name__ == '__main__':
                                 current_row[17] = int((100 - int(row[field_position])) / 5)
                                   
                             else:
-                                current_row[18] = int((field_pos - (100 - int(row[field_position]))) / 5)
+                                current_row[18] = int(int(row[field_position]) / 5)
                             writer.writerow(current_row)
                         
                             wait_on_field_pos = False

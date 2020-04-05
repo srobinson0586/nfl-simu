@@ -27,7 +27,7 @@ class Model():
         self.model.compile(optimizer='adam',
                            loss='categorical_crossentropy',
                            metrics=['accuracy'])
-        self.model.fit(x_train, y_train, epochs=epochs, batch_size=1024)
+        self.model.fit(x_train, y_train, epochs=epochs, batch_size=1024, verbose=0)
 
     def generate_buckets(self):
         self.buckets = []
@@ -114,7 +114,7 @@ class OutcomeModel(Model):
         self.model.compile(optimizer='adam',
                            loss='categorical_crossentropy',
                            metrics=['accuracy'])
-        self.model.fit(x_train, y_train, epochs=epochs, batch_size=1024)
+        self.model.fit(x_train, y_train, epochs=epochs, batch_size=1024, verbose=0)
 
 #######################################
 # YardDistributionModel is a neural network that, given the state of the game at a fourth
@@ -137,7 +137,7 @@ class YardDistributionModel(Model):
         self.model.compile(optimizer='adam',
                            loss='categorical_crossentropy',
                            metrics=['accuracy'])
-        self.model.fit(x_train, y_train, epochs=epochs, batch_size=1024)
+        self.model.fit(x_train, y_train, epochs=epochs, batch_size=1024, verbose=0)
 
 
 class TimeRunoffModel(Model):
@@ -168,6 +168,7 @@ class FieldGoalModel(Model):
         self.model = {}
         for key in attempts:
             self.model[key] = made[key] / attempts[key]
+        
 
     def evaluate(self):
         print()
@@ -181,6 +182,9 @@ class FieldGoalModel(Model):
             else:
                 print("Category: %d-%d, Percentage: %.2f%%" %
                       (key, key + 5, self.model[key] * 100))
+    def predict(self, yds):
+        return self.model[min(65, 5 * math.floor(yds / 5))]
+        
 
 
 class SmallYardDistributionModel(Model):
@@ -208,6 +212,9 @@ class SmallYardDistributionModel(Model):
         for key in self.model:
             print("Catergory: %d-%d yds:" % (key * 10, key * 10 + 10))
             print(["{0:0.2f}".format(i) for i in self.model[key]])
+    
+    def predict(self, yds):
+        return self.model[yds]
 
 
 class PuntModel(Model):
@@ -218,7 +225,8 @@ class PuntModel(Model):
         y_train = self.train['y']
         self.model = KNeighborsClassifier(n_neighbors=neighbors)
         self.model.fit(x_train, y_train)
-    
+        self.classes = self.model.classes_
+        
             
     def generate_buckets(self):
         self.buckets = [('all', self.test)]
@@ -237,6 +245,7 @@ class PuntModel(Model):
         encoded_y = encoder.transform(y_test)           
         labels = np_utils.to_categorical(encoded_y)
         y_test = np.array(labels)
+        
             
            
         predictions = np.stack(self.model.predict_proba(x_test))
@@ -251,6 +260,9 @@ class PuntModel(Model):
         for j in range(0, len(predicted)):
             mse += (predicted[j] - actual[j]) ** 2
         print('all', mse / predictions.shape[1])
+    
+    def predict(self, yds):
+        return self.model.predict_proba(np.array([[yds]]))[0]
         
 
 
