@@ -263,6 +263,44 @@ class PuntModel(Model):
     
     def predict(self, yds):
         return self.model.predict_proba(np.array([[yds]]))[0]
+
+class FourthDownModel (Model):
+
+    def train_model(self):
+        attempts = {}
+        made = {}
+        for i in range(0, 35, 5):
+            attempts[i] = 0
+            made[i] = 0
+
+        for y in self.data['y']:
+            y = int(y)
+            y = min(y, 30)
+            y = max(y, -30)
+            attempts[5 * math.floor(abs(y) / 5)] += 1
+            if y > 0:
+                made[5 * math.floor(abs(y) / 5)] += 1
+
+        self.model = {}
+        for key in attempts:
+            self.model[key] = made[key] / attempts[key]
+
+    def evaluate(self):
+        print()
+        print("*****************")
+        print(self.__class__.__name__)
+        print("*****************")
+        for key in self.model:
+            if key == 30:
+                print("Category: 30+, Percentage: %.2f%%" %
+                      (self.model[key] * 100))
+            else:
+                print("Category: %d-%d, Percentage: %.2f%%" %
+                      (key, key + 5, self.model[key] * 100))
+
+    def predict(self, yds):
+        return self.model[min(30, 5 * math.floor(yds / 5))]
+
         
 
 
