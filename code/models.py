@@ -223,10 +223,12 @@ class PuntModel(Model):
         self.train, self.test = train_test_split(self.data, test_size=split, random_state=0)
         x_train = self.train.drop(columns=['y'])
         y_train = self.train['y']
-        self.model = KNeighborsClassifier(n_neighbors=neighbors)
-        self.model.fit(x_train, y_train)
-        self.classes = self.model.classes_
-        
+        model = KNeighborsClassifier(n_neighbors=neighbors)
+        model.fit(x_train, y_train)
+        self.classes = model.classes_
+        self.model = [0] * 101
+        for yds in range(0,101):
+            self.model[yds] = model.predict_proba(np.array([[yds]]))[0]
             
     def generate_buckets(self):
         self.buckets = [('all', self.test)]
@@ -262,7 +264,7 @@ class PuntModel(Model):
         print('all', mse / predictions.shape[1])
     
     def predict(self, yds):
-        return self.model.predict_proba(np.array([[yds]]))[0]
+        return self.model[yds]
 
 class FourthDownModel (Model):
 
