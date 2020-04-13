@@ -305,5 +305,40 @@ class FourthDownModel (Model):
 
         
 
+def train_models(epochs):
+    os.environ['CUDA_VISIBLE_DEVICES'] = ""
+    print("Training Outcome Model...")
+    om = OutcomeModel()
+    om.train_model(epochs)
 
+    print("Training Yard Distribution Model...")
+    yd = YardDistributionModel()
+    yd.train_model(epochs)
+
+    print("Training Field Goal Model...")
+    fg = FieldGoalModel()
+    fg.train_model()
+
+    print("Training Small Yard Model...")
+    sm = SmallYardDistributionModel() 
+    sm.train_model()
+
+    print("Training Punt Model...")
+    pm = PuntModel()
+    pm.train_model(50)
+
+    print("Training Time Runoff Model...")
+    tr = TimeRunoffModel()
+    tr.train_model(epochs)
+
+    print("Training Turnover Model...")
+    to = TurnoverFieldPosModel()
+    to.train_model(epochs)
+
+    print("Training Fourth Down Model...")
+    fd = FourthDownModel()
+    fd.train_model()
+
+    models = [om, yd, fg, sm, pm, tr, to, fd]
+    return models
         
