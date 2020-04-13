@@ -9,8 +9,6 @@ def next_state(current_state, new_field_pos, runoff, score, keep_pos=False):
     if new_field_pos <= 0 or new_field_pos >= 100:
         return None
     new_time = current_state[1] - runoff
-    if new_time <= -30:
-        return None
     new_time = max(0, new_time)
     new_score = current_state[4] + score if  abs(current_state[4] + score) < 200 else current_state[4]
     if abs(current_state[4] + score) <= 100: 
@@ -41,7 +39,7 @@ def prob(current_state, win_probability, models):
     if win_probability[tuple(current_state)] > -1.0:
         return win_probability[tuple(current_state)]
     
-    elif current_state[1] == 0:
+    elif current_state[1] <= 0:
         #there is no time remaining
         if current_state[4] > 0:            
             win_probability[tuple(current_state)] = 1.0
@@ -62,10 +60,18 @@ def prob(current_state, win_probability, models):
         #0 = def_TD, 1= eoh, 2=4th, 3 = safety, 4 = TD, 5 = TO
         for i in range(0, len(tr.classes)):
             runoff = int(tr.classes[i] * 30 + 30)
-            if current_state[1] - runoff <= -30:
+            #don't consider if a 0% chance
+            if runoff_predictions[i] == 0.0:
                 continue
 
+            #runoff means time expires
+            if current_state[1] - runoff <= -30:
+                p_w += runoff_predictions[i] * win_probability[(current_state[0], 0, current_state[2], current_state[3], current_state[4])]
+                continue
+
+
             pw_TD = 0.0
+            #probability of TD is more than 0
             if outcome_predictions[4] > 0:
                 pw_2P = 0.5 * (1 - prob(next_state(current_state, 75, runoff, 8), win_probability, models)) + 0.5 * (1 - prob(next_state(current_state, 75, runoff, 6), win_probability, models))
                 pw_XP = 0.95 * (1 - prob(next_state(current_state,75, runoff, 7), win_probability, models)) + 0.05 * (1 - prob(next_state(current_state, 75, runoff, 6), win_probability, models))
@@ -104,7 +110,6 @@ def prob(current_state, win_probability, models):
 
             pw_4th = 0.0
             if outcome_predictions[2] > 0:
-                yd_classes = yd.classes
                 yd_predictions = yd.predict(current_state)
                 for j in range(0, len(yd.classes)):
                     if yd_predictions[j] > 0:
@@ -113,8 +118,8 @@ def prob(current_state, win_probability, models):
                         for k in range(0,9):
                             #if the probability is greater than 0
                             if predictions[k] > 0:
-                                yards = j + k
-                                new_position = current_state[0] + yards
+                                yards = yd_.lasses[j] + k
+                                new_position = current_state[0] - yards
                                 if new_position < 100 and new_position > 0:
                                     new_state = current_state.copy()
                                     new_state[0] = new_position
@@ -181,6 +186,7 @@ def calculate_win_probabilities(filename, epochs=1000, max_seconds=1800, load_fi
         state[1] = i
         p_w = prob(state, win_probability, models)
         # print("P_w = %.3f" % p_w)
+    t = time.localtime()
     print("FINISHED DP: %02d/%02d/%02d: %02d:%02d:%02d" % (t.tm_mon, t.tm_mday, t.tm_year, t.tm_hour, t.tm_min, t.tm_sec))
     print("saving results...")
     outfile = open(filename, 'wb')
@@ -196,9 +202,9 @@ def calculate_win_probabilities(filename, epochs=1000, max_seconds=1800, load_fi
 
 if __name__ == '__main__':
     if len(sys.argv) == 2 and sys.argv[1] != '-l':
-        _ = calculate_win_probabilities(sys.argv[1], epochs=1, max_seconds=60)
+        _ = calculate_win_probabilities(sys.argv[1], epochs=1000, max_seconds=360)
     elif len(sys.argv) == 3 and sys.argv[1] == '-l':
-        _ = calculate_win_probabilities(sys.argv[2], epochs=1, max_seconds=60, load_file=True)
+        _ = calculate_win_probabilities(sys.argv[2], epochs=1000, max_seconds=360, load_file=True)
     else:
         print("incorrect usage")
 

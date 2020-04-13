@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import os
 from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.models import Sequential
 from process import generate_data
@@ -188,6 +189,10 @@ class FieldGoalModel(Model):
 
 
 class SmallYardDistributionModel(Model):
+    def __init__(self):
+        self.data, self.classes = generate_data(self.__class__.__name__)
+        self.classes = [i for i in range(0,10)]
+
     def train_model(self):
         groups = {}
         yards = {}
