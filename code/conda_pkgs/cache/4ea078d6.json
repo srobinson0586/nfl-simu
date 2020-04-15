@@ -1,4 +1,4 @@
-{"_url": "https://repo.anaconda.com/pkgs/r/noarch", "_etag": "\"0e92445285725caf09e831e907544a57\"", "_mod": "Thu, 06 Feb 2020 22:10:57 GMT", "_cache_control": "public, max-age=30", 
+{"_url": "https://repo.anaconda.com/pkgs/r/noarch", "_etag": "\"64ae8aa9c5ce8b0cfb2d58ecf2ba0b00\"", "_mod": "Mon, 13 Apr 2020 15:16:43 GMT", "_cache_control": "public, max-age=30", 
   "info": {
     "subdir": "noarch"
   },
@@ -60771,6 +60771,49 @@
       "timestamp": 1557944177844,
       "version": "2.0.2"
     },
+    "r-pkgdown-1.4.1-r36h6115d3f_0.tar.bz2": {
+      "build": "r36h6115d3f_0",
+      "build_number": 0,
+      "depends": [
+        "r-base >=3.6,<3.7.0a0",
+        "r-callr >=2.0.2",
+        "r-cli",
+        "r-crayon",
+        "r-desc",
+        "r-digest",
+        "r-evaluate",
+        "r-fansi",
+        "r-fs >=1.2.0",
+        "r-highlight",
+        "r-httr",
+        "r-magrittr",
+        "r-mass",
+        "r-memoise",
+        "r-openssl",
+        "r-processx",
+        "r-purrr",
+        "r-rematch2",
+        "r-rlang >=0.3.0",
+        "r-rmarkdown >=1.1.9007",
+        "r-rstudioapi",
+        "r-tibble",
+        "r-whisker",
+        "r-withr",
+        "r-xml2 >=1.1.1",
+        "r-yaml",
+        "_r-mutex 1.* anacondar_1"
+      ],
+      "license": "MIT",
+      "license_family": "MIT",
+      "md5": "56193db2239e7d3b6efe3b24101b67b3",
+      "name": "r-pkgdown",
+      "noarch": "generic",
+      "sha256": "329cff4e726101d14ce4cd5e261743ee3e0412cfe7215948168bf7403ce6c5bf",
+      "size": 550741,
+      "subdir": "noarch",
+      "timestamp": 1583933974975,
+      "version": "1.4.1"
+    },
     "r-pkgkitten-0.1.4-r36h6115d3f_0.tar.bz2": {
       "build": "r36h6115d3f_0",
       "build_number": 0,
@@ -69553,6 +69596,25 @@
       "subdir": "noarch",
       "timestamp": 1557941381811,
       "version": "1.0.1"
+    },
+    "r-rematch2-2.1.0-r36h6115d3f_0.tar.bz2": {
+      "build": "r36h6115d3f_0",
+      "build_number": 0,
+      "depends": [
+        "r-base >=3.6,<3.7.0a0",
+        "r-tibble",
+        "_r-mutex 1.* anacondar_1"
+      ],
+      "license": "MIT",
+      "license_family": "MIT",
+      "md5": "88e2cdb3366f5f99ee4372e574a330bd",
+      "name": "r-rematch2",
+      "noarch": "generic",
+      "sha256": "288276a9b41255257a49ead6e8259b81d95c7f70e7239f4ae00bfba694783743",
+      "size": 86190,
+      "subdir": "noarch",
+      "timestamp": 1583933912894,
+      "version": "2.1.0"
     },
     "r-remindr-0.0.1-r36h6115d3f_0.tar.bz2": {
       "build": "r36h6115d3f_0",

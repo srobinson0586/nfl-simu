@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
 from keras.utils import np_utils
+from tensorflow.keras.utils import plot_model
 
 
 class Model():
@@ -315,7 +316,7 @@ def train_models(epochs):
     print("Training Outcome Model...")
     om = OutcomeModel()
     om.train_model(epochs)
-
+    
     print("Training Yard Distribution Model...")
     yd = YardDistributionModel()
     yd.train_model(epochs)
@@ -347,3 +348,11 @@ def train_models(epochs):
     models = [om, yd, fg, sm, pm, tr, to, fd]
     return models
         
+if __name__ == '__main__':
+    models = train_models(1)
+    for model in models:
+        model.evaluate()
+
+
+
+

@@ -114,15 +114,15 @@ def prob(current_state, win_probability, models):
                 for j in range(0, len(yd.classes)):
                     if yd_predictions[j] > 0:
                         small_total = 0.0
-                        predictions = sm.predict(yd_classes[j])
+                        predictions = sm.predict(yd.classes[j])
                         for k in range(0,9):
                             #if the probability is greater than 0
                             if predictions[k] > 0:
-                                yards = yd_.lasses[j] + k
+                                yards = yd.classes[j] + k
                                 new_position = current_state[0] - yards
                                 if new_position < 100 and new_position > 0:
                                     new_state = current_state.copy()
-                                    new_state[0] = new_position
+                                    new_state[0] = int(new_position)
                                     if new_position <= 10:
                                         togo = new_position
                                     elif current_state[0] > new_position:
@@ -181,11 +181,12 @@ def calculate_win_probabilities(filename, epochs=1000, max_seconds=1800, load_fi
     t = time.localtime()
     print("BEGINNING DP: %02d/%02d/%02d: %02d:%02d:%02d" % (t.tm_mon, t.tm_mday, t.tm_year, t.tm_hour, t.tm_min, t.tm_sec))
     state = [75,0,1,0,0]
+    p = []
     for i in range(0,max_seconds + 1,30):
-        print("%d seconds" % i)
         state[1] = i
         p_w = prob(state, win_probability, models)
-        # print("P_w = %.3f" % p_w)
+        print("%d seconds: P_w = %.3f" % (i, p_w))
+        p.append(p_w)
     t = time.localtime()
     print("FINISHED DP: %02d/%02d/%02d: %02d:%02d:%02d" % (t.tm_mon, t.tm_mday, t.tm_year, t.tm_hour, t.tm_min, t.tm_sec))
     print("saving results...")
@@ -193,6 +194,7 @@ def calculate_win_probabilities(filename, epochs=1000, max_seconds=1800, load_fi
     np.save(outfile, win_probability, models)
     t = time.localtime()
     print("FINISH: %02d/%02d/%02d: %02d:%02d:%02d" % (t.tm_mon, t.tm_mday, t.tm_year, t.tm_hour, t.tm_min, t.tm_sec))
+    print(p)
     outfile.close()
     
     #return models trained in order to prevent having to retrain them
@@ -202,11 +204,13 @@ def calculate_win_probabilities(filename, epochs=1000, max_seconds=1800, load_fi
 
 if __name__ == '__main__':
     if len(sys.argv) == 2 and sys.argv[1] != '-l':
-        _ = calculate_win_probabilities(sys.argv[1], epochs=1000, max_seconds=360)
+        _ = calculate_win_probabilities(sys.argv[1], epochs=1000, max_seconds=1800)
     elif len(sys.argv) == 3 and sys.argv[1] == '-l':
-        _ = calculate_win_probabilities(sys.argv[2], epochs=1000, max_seconds=360, load_file=True)
+        _ = calculate_win_probabilities(sys.argv[2], epochs=1000, max_seconds=1800, load_file=True)
     else:
         print("incorrect usage")
+    while 1:
+        pass
 
 
 

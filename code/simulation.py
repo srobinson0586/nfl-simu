@@ -3,7 +3,7 @@ import sys
 import numpy as np
 from numpy.random import choice
 from models import train_models
-from agents import OptimalAgent
+from agents import OptimalAgent, TwoPointAgent, FourthDownConversionAgent, RandomAgent, ConventionalAgent
 from win_prob import next_state
 
 
