@@ -6,8 +6,10 @@ import sys
 
 def next_state(current_state, new_field_pos, runoff, score, keep_pos=False):
     #get rid of invalid states
-    if new_field_pos <= 0 or new_field_pos >= 100:
-        return None
+    if new_field_pos <= 0:
+        new_field_pos = 5
+    if new_field_pos >= 100:
+        new_field_pos = 95
     new_time = current_state[1] - runoff
     new_time = max(0, new_time)
     new_score = current_state[4] + score if  abs(current_state[4] + score) < 200 else current_state[4]
@@ -57,6 +59,7 @@ def prob(current_state, win_probability, models):
         p_w = 0.0
         runoff_predictions = tr.predict(current_state)
         outcome_predictions = om.predict(current_state)
+        #print(runoff_predictions)
         #0 = def_TD, 1= eoh, 2=4th, 3 = safety, 4 = TD, 5 = TO
         for i in range(0, len(tr.classes)):
             runoff = int(tr.classes[i] * 30 + 30)
@@ -66,7 +69,7 @@ def prob(current_state, win_probability, models):
 
             #runoff means time expires
             if current_state[1] - runoff <= -30:
-                p_w += runoff_predictions[i] * win_probability[(current_state[0], 0, current_state[2], current_state[3], current_state[4])]
+                p_w += runoff_predictions[i] * win_probability[(current_state[0], current_state[1] - 30, current_state[2], current_state[3], current_state[4])]
                 continue
 
 
@@ -115,36 +118,41 @@ def prob(current_state, win_probability, models):
                     if yd_predictions[j] > 0:
                         small_total = 0.0
                         predictions = sm.predict(yd.classes[j])
-                        for k in range(0,9):
+                        for k in range(0,10):
                             #if the probability is greater than 0
                             if predictions[k] > 0:
                                 yards = yd.classes[j] + k
                                 new_position = current_state[0] - yards
-                                if new_position < 100 and new_position > 0:
-                                    new_state = current_state.copy()
-                                    new_state[0] = int(new_position)
-                                    if new_position <= 10:
-                                        togo = new_position
-                                    elif current_state[0] > new_position:
-                                        togo = 10 - ((current_state[0] - new_position) % 10)
-                                    else:
-                                        togo = new_position - (current_state[0] - 10)
-                                    if new_position > 10:
-                                        pw_GO = fd.predict(togo) * prob(next_state(new_state, new_state[0] - togo, runoff, 0, True), win_probability, models) + (1 - fd.predict(togo)) * (1 - prob(next_state(new_state, 100 - new_state[0], runoff, 0), win_probability, models))
-                                    else:
-                                        pw_2P = 0.5 * (1 - prob(next_state(current_state, 75, runoff, 8), win_probability, models)) + 0.5 * (1 - prob(next_state(current_state, 75, runoff, 6), win_probability, models))
-                                        pw_XP = 0.95 * (1 - prob(next_state(current_state,75, runoff, 7), win_probability, models)) + 0.05 * (1 - prob(next_state(current_state, 75, runoff, 6), win_probability, models))
-                                        pw_GO = fd.predict(togo) * max(pw_XP, pw_2P) + (1 - fd.predict(togo)) * (1 - prob(next_state(new_state, 100 - new_state[0], runoff, 0), win_probability, models))
-                                        
-                                    pw_FG = fg.predict(new_position + 17) * (1 - prob(next_state(new_state, 75, runoff, 3), win_probability, models)) + (1 - fg.predict(new_position + 17)) * (1 - prob(next_state(new_state, 100 - new_state[0], runoff, 0), win_probability, models))
+                                if new_position <= 0:
+                                    new_position = 5
+                                if new_position >= 100:
+                                    new_position = 95
+                               
+                                new_state = current_state.copy()
+                                new_state[0] = int(new_position)
+                                if new_position <= 10 or current_state[0] <= 10:
+                                    togo = new_position
+                                elif current_state[0] > new_position:
+                                    togo = 10 - ((current_state[0] - new_position) % 10)
+                                else:
+                                    togo = new_position - (current_state[0] - 10)
+                                if togo != new_position:
+                                    pw_GO = fd.predict(togo)[1] * prob(next_state(new_state, new_state[0] - togo, runoff, 0, True), win_probability, models) +  fd.predict(togo)[0] * (1 - prob(next_state(new_state, 100 - new_state[0], runoff, 0), win_probability, models))
+                                else:
+                                    pw_2P = 0.5 * (1 - prob(next_state(current_state, 75, runoff, 8), win_probability, models)) + 0.5 * (1 - prob(next_state(current_state, 75, runoff, 6), win_probability, models))
+                                    pw_XP = 0.95 * (1 - prob(next_state(current_state,75, runoff, 7), win_probability, models)) + 0.05 * (1 - prob(next_state(current_state, 75, runoff, 6), win_probability, models))
+                                    pw_GO = fd.predict(togo)[1] * max(pw_XP, pw_2P) + fd.predict(togo)[0] * (1 - prob(next_state(new_state, 100 - new_state[0], runoff, 0), win_probability, models))
                                     
-                                    punt_classes = pm.classes
-                                    pw_punt = 0.0
-                                    punt_predictions = pm.predict(new_state[0])
-                                    for p in range(0,len(pm.classes)):
-                                        if punt_predictions[p] > 0:
-                                            pw_punt += punt_predictions[p] * (1 - prob(next_state(new_state, punt_classes[p] * 5 + 5, runoff, 0), win_probability, models))
-                                    small_total += predictions[k] * max(pw_GO, pw_FG, pw_punt)
+
+                                pw_FG = fg.predict(new_position + 17) * (1 - prob(next_state(new_state, 75, runoff, 3), win_probability, models)) + (1 - fg.predict(new_position + 17)) * (1 - prob(next_state(new_state, 100 - new_state[0], runoff, 0), win_probability, models))
+                                
+                                punt_classes = pm.classes
+                                pw_punt = 0.0
+                                punt_predictions = pm.predict(new_state[0])
+                                for p in range(0,len(pm.classes)):
+                                    if punt_predictions[p] > 0:
+                                        pw_punt += punt_predictions[p] * (1 - prob(next_state(new_state, punt_classes[p] * 5 + 5, runoff, 0), win_probability, models))
+                                small_total += predictions[k] * max(pw_GO, pw_FG, pw_punt)
 
                         pw_4th += yd_predictions[j] * small_total
 
@@ -152,6 +160,7 @@ def prob(current_state, win_probability, models):
             #print("D: %.3f, E: %.3f, F:%.3f, S: %.3f, TD: %.3f, TO: %.3f" % (pw_defTD, pw_eoh, pw_4th, pw_safety, pw_TD, pw_TO))
             temp = outcome_predictions[0] * pw_defTD + outcome_predictions[1] * pw_eoh + outcome_predictions[2] * pw_4th + outcome_predictions[3] * pw_safety * outcome_predictions[4] * pw_TD + outcome_predictions[5] * pw_TO
             p_w += runoff_predictions[i] * temp
+            # print(temp, p_w)
     
         win_probability[tuple(current_state)] = p_w
     

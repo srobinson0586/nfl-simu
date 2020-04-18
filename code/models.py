@@ -116,7 +116,7 @@ class OutcomeModel(Model):
         self.model.compile(optimizer='adam',
                            loss='categorical_crossentropy',
                            metrics=['accuracy'])
-        self.model.fit(x_train, y_train, epochs=epochs, batch_size=1024, verbose=0)
+        self.model.fit(x_train, y_train, epochs=epochs, batch_size=1024, verbose=1)
 
 #######################################
 # YardDistributionModel is a neural network that, given the state of the game at a fourth
@@ -316,7 +316,7 @@ def train_models(epochs):
     print("Training Outcome Model...")
     om = OutcomeModel()
     om.train_model(epochs)
-    
+
     print("Training Yard Distribution Model...")
     yd = YardDistributionModel()
     yd.train_model(epochs)
