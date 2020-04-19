@@ -116,7 +116,7 @@ class OutcomeModel(Model):
         self.model.compile(optimizer='adam',
                            loss='categorical_crossentropy',
                            metrics=['accuracy'])
-        self.model.fit(x_train, y_train, epochs=epochs, batch_size=1024, verbose=1)
+        self.model.fit(x_train, y_train, epochs=epochs, batch_size=1024, verbose=0)
 
 #######################################
 # YardDistributionModel is a neural network that, given the state of the game at a fourth
@@ -274,40 +274,23 @@ class PuntModel(Model):
 
 class FourthDownModel (Model):
 
-    def train_model(self):
-        attempts = {}
-        made = {}
-        for i in range(0, 35, 5):
-            attempts[i] = 0
-            made[i] = 0
+    def train_model(self, epochs, split=0.2):
+        self.train, self.test = train_test_split(
+            self.data, test_size=split, random_state=0)
+        self.model = Sequential()
+        x_train = self.train.drop(columns=['y'])
+        y_train = np.stack(self.train['y'])
+        self.model.add(Dense(70, activation='relu',
+                             input_dim=x_train.shape[1]))
+        self.model.add(Dropout(0.1))
+        self.model.add(Dense(70, activation='relu'))
+        self.model.add(Dense(len(y_train[0]), activation='softmax'))
+        self.model.compile(optimizer='adam',
+                           loss='binary_crossentropy',
+                           metrics=['accuracy'])
+        self.model.fit(x_train, y_train, epochs=epochs, batch_size=1024, verbose=0)
+    
 
-        for y in self.data['y']:
-            y = int(y)
-            y = min(y, 30)
-            y = max(y, -30)
-            attempts[5 * math.floor(abs(y) / 5)] += 1
-            if y > 0:
-                made[5 * math.floor(abs(y) / 5)] += 1
-
-        self.model = {}
-        for key in attempts:
-            self.model[key] = made[key] / attempts[key]
-
-    def evaluate(self):
-        print()
-        print("*****************")
-        print(self.__class__.__name__)
-        print("*****************")
-        for key in self.model:
-            if key == 30:
-                print("Category: 30+, Percentage: %.2f%%" %
-                      (self.model[key] * 100))
-            else:
-                print("Category: %d-%d, Percentage: %.2f%%" %
-                      (key, key + 5, self.model[key] * 100))
-
-    def predict(self, yds):
-        return self.model[min(30, 5 * math.floor(yds / 5))]
 
         
 
@@ -343,7 +326,7 @@ def train_models(epochs):
 
     print("Training Fourth Down Model...")
     fd = FourthDownModel()
-    fd.train_model()
+    fd.train_model(epochs)
 
     models = [om, yd, fg, sm, pm, tr, to, fd]
     return models

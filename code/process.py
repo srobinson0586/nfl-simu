@@ -7,13 +7,15 @@ import os
 def generate_data(variant):
     from sklearn.preprocessing import LabelEncoder
     from keras.utils import np_utils
-    drop = ['result', 'yds_gained / 10', 'actual_yds_gained', 'field_goal_distance', 'field_goal_attempt',
-                         'field_goal_distance', 'punt_attempt', 'punt_distance_from_goalline', 'field_pos_at_punt', 'turnover_delta_field_pos', 'time_runoff']
     if variant == 'FourthDownModel':
+        drop = ['result']
         data = pd.read_csv("../data/fourth_down.csv")
         data = data.drop(columns=['game_id', 'drive_number'])
-        classes = None
+        y = data['result'] 
+        
     else:
+        drop = ['result', 'yds_gained / 10', 'actual_yds_gained', 'field_goal_distance', 'field_goal_attempt',
+                         'field_goal_distance', 'punt_attempt', 'punt_distance_from_goalline', 'field_pos_at_punt', 'turnover_delta_field_pos', 'time_runoff']
         data = pd.read_csv("../data/drive_data.csv")  
         data = data.drop(columns=['game_id', 'drive_number', 'UTM', 'pos_team TOL', 'def_team TOL'])
         classes = None
@@ -48,16 +50,16 @@ def generate_data(variant):
         else:
             y = data['result']
             
-        if variant != 'PuntModel' and variant != 'SmallYardDistributionModel' and variant != 'FieldGoalModel':
-            encoder = LabelEncoder()
-            encoder.fit(y)
-            encoded_y = encoder.transform(y)           
-            labels = np_utils.to_categorical(encoded_y)
-            y = list(labels)
-            classes = encoder.classes_
+    if variant != 'PuntModel' and variant != 'SmallYardDistributionModel' and variant != 'FieldGoalModel':
+        encoder = LabelEncoder()
+        encoder.fit(y)
+        encoded_y = encoder.transform(y)           
+        labels = np_utils.to_categorical(encoded_y)
+        y = list(labels)
+        classes = encoder.classes_
 
-        data.insert(data.shape[1], "y", y, False)
-        data = data.drop(columns=drop)
+    data.insert(data.shape[1], "y", y, False)
+    data = data.drop(columns=drop)
     return data, classes
 
 
@@ -82,7 +84,7 @@ if __name__ == '__main__':
         drive_writer = csv.writer(drive_file, delimiter=',', quotechar='"')
         drive_writer.writerow(['game_id', 'drive_number', 'field_pos', 'time_remaining', 'is_half_one', 'is_half_two', 'UTM', 'score_differential', 'pos_team TOL', 'def_team TOL', 'result', 'yds_gained / 10', 'actual_yds_gained', 'field_goal_attempt', 'field_goal_distance', 'punt_attempt', 'field_pos_at_punt', 'punt_distance_from_goalline', 'turnover_delta_field_pos', 'time_runoff'])
         fourth_down_writer = csv.writer(fourth_down_file, delimiter=',', quotechar='"')
-        fourth_down_writer.writerow(['game_id', 'drive_number', 'y'])
+        fourth_down_writer.writerow(['game_id', 'drive_number', 'yds', 'result'])
         for filename in os.listdir('../data'):
 
             if filename != "drive_data.csv" and filename != 'fourth_down.csv' and filename[0] != '.':
@@ -152,7 +154,7 @@ if __name__ == '__main__':
                             continue
 
                         if row[fourth_down_converted] == '1':
-                            fourth_down_writer.writerow([game_id, current_drive, row[yds_to_go]])
+                            fourth_down_writer.writerow([game_id, current_drive, row[yds_to_go], "success"])
 
                         if row[play_type] == 'kickoff' and not row[touchdown] == '1':
                             begin = True
@@ -162,7 +164,7 @@ if __name__ == '__main__':
                                 begin = True
                             drive_writer.writerow([game_id, current_drive, field_pos, time_remaining, is_half_one, is_half_two, is_UTM, score_diff, p_timeout, d_timeout, 'fourth_down', int(
                                 (int(field_pos) - int(row[field_position]))/10), int(field_pos) - int(row[field_position]), '0', 'NA', '0', 'NA', 'NA', 'NA', int((time_remaining - int(row[half_seconds]))/30)])
-                            fourth_down_writer.writerow([game_id, current_drive, int(row[yds_to_go]) * -1])
+                            fourth_down_writer.writerow([game_id, current_drive, row[yds_to_go], "fail"])
 
                         
                         elif row[play_type] == 'punt':
