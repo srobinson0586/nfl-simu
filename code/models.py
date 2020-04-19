@@ -38,28 +38,8 @@ class Model():
         # plays with different field positions
         temp = self.test[(self.test['field_pos'] >= 20) &
                          (self.test['field_pos'] < 30)]
-        self.buckets.append(('20-30', temp))
-        temp = self.test[(self.test['field_pos'] >= 30) &
-                         (self.test['field_pos'] < 40)]
         self.buckets.append(('30-40', temp))
-        temp = self.test[(self.test['field_pos'] >= 40) &
-                         (self.test['field_pos'] < 50)]
-        self.buckets.append(('40-50', temp))
-        temp = self.test[(self.test['field_pos'] >= 50) &
-                         (self.test['field_pos'] < 60)]
-        self.buckets.append(('50-60', temp))
-        temp = self.test[(self.test['field_pos'] >= 60) &
-                         (self.test['field_pos'] < 70)]
-        self.buckets.append(('60-70', temp))
-        temp = self.test[(self.test['field_pos'] >= 70) &
-                         (self.test['field_pos'] < 80)]
-        self.buckets.append(('70-80', temp))
-        temp = self.test[(self.test['field_pos'] >= 80) &
-                         (self.test['field_pos'] < 90)]
-        self.buckets.append(('80-90', temp))
-        temp = self.test[(self.test['field_pos'] >= 90) &
-                         (self.test['field_pos'] < 100)]
-        self.buckets.append(('90-100', temp))
+        
 
         # plays with a large score differential
         temp = self.test[(self.test['score_differential'] > 21)]
@@ -147,8 +127,9 @@ class TimeRunoffModel(Model):
 
 
 class TurnoverFieldPosModel(Model):
-    def generate_buckets(self):
-        self.buckets = [('all',self.test)]
+    pass
+    # def generate_buckets(self):
+    #     self.buckets = [('all',self.test)]
 
 
 class FieldGoalModel(Model):
@@ -290,6 +271,8 @@ class FourthDownModel (Model):
                            metrics=['accuracy'])
         self.model.fit(x_train, y_train, epochs=epochs, batch_size=1024, verbose=0)
     
+    def generate_buckets(self):
+        self.buckets = [('all', self.test)]
 
 
         
@@ -314,7 +297,7 @@ def train_models(epochs):
 
     print("Training Punt Model...")
     pm = PuntModel()
-    pm.train_model(50)
+    pm.train_model(979)
 
     print("Training Time Runoff Model...")
     tr = TimeRunoffModel()

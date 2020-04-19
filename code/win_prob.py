@@ -157,8 +157,8 @@ def prob(current_state, win_probability, models):
                         pw_4th += yd_predictions[j] * small_total
 
 
-            print(current_state)
-            print("D: %.3f, E: %.3f, F:%.3f, S: %.3f, TD: %.3f, TO: %.3f" % (pw_defTD, pw_eoh, pw_4th, pw_safety, pw_TD, pw_TO))
+            #print(current_state)
+            #print("D: %.3f, E: %.3f, F:%.3f, S: %.3f, TD: %.3f, TO: %.3f" % (pw_defTD, pw_eoh, pw_4th, pw_safety, pw_TD, pw_TO))
             temp = outcome_predictions[0] * pw_defTD + outcome_predictions[1] * pw_eoh + outcome_predictions[2] * pw_4th + outcome_predictions[3] * pw_safety * outcome_predictions[4] * pw_TD + outcome_predictions[5] * pw_TO
             p_w += runoff_predictions[i] * temp
             # print(temp, p_w)
@@ -214,7 +214,7 @@ def calculate_win_probabilities(filename, epochs=1000, max_seconds=1800, load_fi
 
 if __name__ == '__main__':
     if len(sys.argv) == 2 and sys.argv[1] != '-l':
-        _ = calculate_win_probabilities(sys.argv[1], epochs=1000, max_seconds=90)
+        _ = calculate_win_probabilities(sys.argv[1], epochs=1000, max_seconds=1800)
     elif len(sys.argv) == 3 and sys.argv[1] == '-l':
         _ = calculate_win_probabilities(sys.argv[2], epochs=1000, max_seconds=1800, load_file=True)
     else:
