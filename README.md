@@ -2,14 +2,14 @@
 
 This repository contains code that creates an optimal NFL football agent that plays against other agents in football game simulations.
 
-###Software Requirements
+### Software Requirements
 - Tensorflow 1.15.0
 - Keras 2.2.4
 - Numpy 1.1
 - Scikit-learn 0.22.1
 - Pandas 1.0.0
 
-###Documentation
+### Documentation
 * **process.py** - parses through the play-by-play data and compacts it into drive-by-drive data. Creates a csv file called "drive\_data.csv" that contains information on each drive. All of the data is in the data folder. Also contains a function "generate\_data" that takes a model as input, parses the drive data and returns appropriate input and output vectors based on the model.
 * **models.py** - contains the Model class and each subclass representing each model. Each Model class has a train, evaluate, and predict method that varies depending on the model. Also contains a "train\_models" function that trains each model and returns a list that contains each trained model.
 * **win_prob.py** - contains the function that uses recursion with memoization to calculate the probability of winning for a given state. Saves the results to a file specified as a command line argument.
