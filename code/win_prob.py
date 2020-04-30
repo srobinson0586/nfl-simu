@@ -61,7 +61,7 @@ def prob(current_state, win_probability, models):
         outcome_predictions = om.predict(current_state)
         #print(runoff_predictions)
         #0 = def_TD, 1= eoh, 2=4th, 3 = safety, 4 = TD, 5 = TO
-        for i in range(0, len(tr.classes)):
+        for i in range(len(tr.classes)):
             runoff = int(tr.classes[i] * 30 + 30)
             #don't consider if a 0% chance
             if runoff_predictions[i] == 0.0:
@@ -92,7 +92,7 @@ def prob(current_state, win_probability, models):
 
             pw_safety = 0.0
             if outcome_predictions[3] > 0:
-                pw_safety = (1 - prob(next_state(current_state, 75, runoff, -2), win_probability, models))
+                pw_safety = 1 - prob(next_state(current_state, 75, runoff, -2), win_probability, models)
             
             
             pw_eoh = 0.0
@@ -105,7 +105,7 @@ def prob(current_state, win_probability, models):
             
             
             pw_defTD = 0.0
-            if outcome_predictions[0]:
+            if outcome_predictions[0] > 0:
                 pw_def2P = 0.5 * prob(next_state(current_state, 75, runoff, -8, True), win_probability, models) + 0.5 * prob(next_state(current_state, 75, runoff, -6, True), win_probability, models)
                 pw_defXP = 0.95 * prob(next_state(current_state,75, runoff, -7, True), win_probability, models) + 0.05 * prob(next_state(current_state, 75, runoff, -6, True), win_probability, models)
                 pw_defTD = min(pw_def2P, pw_defXP)
@@ -114,14 +114,14 @@ def prob(current_state, win_probability, models):
             pw_4th = 0.0
             if outcome_predictions[2] > 0:
                 yd_predictions = yd.predict(current_state)
-                for j in range(0, len(yd.classes)):
+                for j in range(len(yd.classes)):
                     if yd_predictions[j] > 0:
                         small_total = 0.0
                         predictions = sm.predict(yd.classes[j])
-                        for k in range(0,10):
+                        for k in range(10):
                             #if the probability is greater than 0
                             if predictions[k] > 0:
-                                yards = yd.classes[j] + k
+                                yards = yd.classes[j] * 10 + k
                                 new_position = current_state[0] - yards
                                 if new_position <= 0:
                                     new_position = 5
@@ -158,8 +158,10 @@ def prob(current_state, win_probability, models):
 
 
             #print(current_state)
-            #print("D: %.3f, E: %.3f, F:%.3f, S: %.3f, TD: %.3f, TO: %.3f" % (pw_defTD, pw_eoh, pw_4th, pw_safety, pw_TD, pw_TO))
-            temp = outcome_predictions[0] * pw_defTD + outcome_predictions[1] * pw_eoh + outcome_predictions[2] * pw_4th + outcome_predictions[3] * pw_safety * outcome_predictions[4] * pw_TD + outcome_predictions[5] * pw_TO
+            ##print(outcome_predictions)
+            #print(sum(outcome_predictions))
+            #print("D: %f, E: %f, F:%f, S: %f, TD: %f, TO: %f" % (pw_defTD, pw_eoh, pw_4th, pw_safety, pw_TD, pw_TO))
+            temp = (outcome_predictions[0] * pw_defTD) + (outcome_predictions[1] * pw_eoh) + (outcome_predictions[2] * pw_4th) + (outcome_predictions[3] * pw_safety) + (outcome_predictions[4] * pw_TD) + (outcome_predictions[5] * pw_TO)
             p_w += runoff_predictions[i] * temp
             # print(temp, p_w)
     
@@ -181,7 +183,7 @@ def calculate_win_probabilities(filename, epochs=1000, max_seconds=1800, load_fi
         print("%s does not exist" % filename)
         return None
     else:
-        win_probability = np.full((100,1801,2,2,201), -1.0)
+        win_probability = np.full((100,1801,2,2,300), -1.0)
 
     t = time.localtime()
     print("START: %02d/%02d/%02d: %02d:%02d:%02d" % (t.tm_mon, t.tm_mday, t.tm_year, t.tm_hour, t.tm_min, t.tm_sec))
@@ -219,9 +221,6 @@ if __name__ == '__main__':
         _ = calculate_win_probabilities(sys.argv[2], epochs=1000, max_seconds=1800, load_file=True)
     else:
         print("incorrect usage")
-    while 1:
-        pass
-
 
 
 

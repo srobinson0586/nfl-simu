@@ -1,18 +1,20 @@
 import numpy as np
 import math
 import os
+from tensorflow import set_random_seed
+from tensorflow.keras import backend
 from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.models import Sequential
-from process import generate_data
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
 from keras.utils import np_utils
-from tensorflow.keras.utils import plot_model
+from process import generate_data
 
 
 class Model():
     def __init__(self, split=0.2):
+        set_random_seed(0)
         self.data, self.classes = generate_data(self.__class__.__name__)
 
     def train_model(self, epochs, split=0.2):
@@ -23,7 +25,7 @@ class Model():
         y_train = np.stack(self.train['y'])
         self.model.add(Dense(70, activation='relu',
                              input_dim=x_train.shape[1]))
-        self.model.add(Dropout(0.1))
+        self.model.add(Dropout(0.1, seed=0))
         self.model.add(Dense(80, activation='relu'))
         self.model.add(Dense(len(y_train[0]), activation='softmax'))
         self.model.compile(optimizer='adam',
@@ -38,8 +40,28 @@ class Model():
         # plays with different field positions
         temp = self.test[(self.test['field_pos'] >= 20) &
                          (self.test['field_pos'] < 30)]
+        self.buckets.append(('20-30', temp))
+        temp = self.test[(self.test['field_pos'] >= 30) &
+                         (self.test['field_pos'] < 40)]
         self.buckets.append(('30-40', temp))
-        
+        temp = self.test[(self.test['field_pos'] >= 40) &
+                         (self.test['field_pos'] < 50)]
+        self.buckets.append(('40-50', temp))
+        temp = self.test[(self.test['field_pos'] >= 50) &
+                         (self.test['field_pos'] < 60)]
+        self.buckets.append(('50-60', temp))
+        temp = self.test[(self.test['field_pos'] >= 60) &
+                         (self.test['field_pos'] < 70)]
+        self.buckets.append(('60-70', temp))
+        temp = self.test[(self.test['field_pos'] >= 70) &
+                         (self.test['field_pos'] < 80)]
+        self.buckets.append(('70-80', temp))
+        temp = self.test[(self.test['field_pos'] >= 80) &
+                         (self.test['field_pos'] < 90)]
+        self.buckets.append(('80-90', temp))
+        temp = self.test[(self.test['field_pos'] >= 90) &
+                         (self.test['field_pos'] < 100)]
+        self.buckets.append(('90-100', temp))
 
         # plays with a large score differential
         temp = self.test[(self.test['score_differential'] > 21)]
@@ -96,7 +118,7 @@ class OutcomeModel(Model):
         self.model.compile(optimizer='adam',
                            loss='categorical_crossentropy',
                            metrics=['accuracy'])
-        self.model.fit(x_train, y_train, epochs=epochs, batch_size=1024, verbose=0)
+        self.model.fit(x_train, y_train, epochs=epochs, batch_size=1024, verbose=0, shuffle=False)
 
 #######################################
 # YardDistributionModel is a neural network that, given the state of the game at a fourth
@@ -113,7 +135,7 @@ class YardDistributionModel(Model):
         y_train = np.stack(self.train['y'])
         self.model.add(Dense(70, activation='relu',
                              input_dim=x_train.shape[1]))
-        self.model.add(Dropout(0.1))
+        self.model.add(Dropout(0.1, seed=0))
         self.model.add(Dense(70, activation='relu'))
         self.model.add(Dense(len(y_train[0]), activation='softmax'))
         self.model.compile(optimizer='adam',
@@ -258,26 +280,35 @@ class FourthDownModel (Model):
     def train_model(self, epochs, split=0.2):
         self.train, self.test = train_test_split(
             self.data, test_size=split, random_state=0)
-        self.model = Sequential()
+        model = Sequential()
         x_train = self.train.drop(columns=['y'])
         y_train = np.stack(self.train['y'])
-        self.model.add(Dense(70, activation='relu',
+        model.add(Dense(70, activation='relu',
                              input_dim=x_train.shape[1]))
-        self.model.add(Dropout(0.1))
-        self.model.add(Dense(70, activation='relu'))
-        self.model.add(Dense(len(y_train[0]), activation='softmax'))
-        self.model.compile(optimizer='adam',
+        model.add(Dropout(0.1, seed=0))
+        model.add(Dense(70, activation='relu'))
+        model.add(Dense(len(y_train[0]), activation='softmax'))
+        model.compile(optimizer='adam',
                            loss='binary_crossentropy',
                            metrics=['accuracy'])
-        self.model.fit(x_train, y_train, epochs=epochs, batch_size=1024, verbose=0)
+        model.fit(x_train, y_train, epochs=epochs, batch_size=1024, verbose=0)
+
+        self.model = [0] * 100
+        for yds in range(1,100):
+            self.model[yds] = model.predict_proba(np.array([[yds]]))[0] 
     
     def generate_buckets(self):
         self.buckets = [('all', self.test)]
+
+    def predict(self, yds):
+        return self.model[int(yds)]
 
 
         
 
 def train_models(epochs):
+    backend.set_floatx('float64')
+
     os.environ['CUDA_VISIBLE_DEVICES'] = ""
     print("Training Outcome Model...")
     om = OutcomeModel()

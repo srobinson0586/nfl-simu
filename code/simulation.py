@@ -61,7 +61,7 @@ def simulate(agent1, agent2, models, trials):
 					new_position = 0
 					while new_position <= 0 or new_position >= 100:
 						yd_result = choice(yd.classes, p=yd.predict(state))
-						yards = yd_result + choice(sm.classes, p=sm.predict(yd_result))
+						yards = yd_result * 10 + choice(sm.classes, p=sm.predict(yd_result))
 						new_position = state[0] - yards
 
 					GTG = False
