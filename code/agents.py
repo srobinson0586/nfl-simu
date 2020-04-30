@@ -30,10 +30,10 @@ class OptimalAgent(Agent):
 		FAIL_state = next_state(current_state,75, runoff, 6)
 
 		#probability of winning if decision is too kick XP
-		pw_XP = 0.95 * self.win_probabilities[tuple(XP_state)] + 0.05 * self.win_probabilities[tuple(FAIL_state)]
+		pw_XP = 0.95 * (1 - self.win_probabilities[tuple(XP_state)]) + 0.05 * (1 - self.win_probabilities[tuple(FAIL_state)])
 
 		#probability of winning if decision is to go for 2 point conversion
-		pw_2P = 0.5 * self.win_probabilities[tuple(TP_state)] + 0.5 * self.win_probabilities[tuple(FAIL_state)]
+		pw_2P = 0.5 * (1 - self.win_probabilities[tuple(TP_state)]) + 0.5 * (1 - self.win_probabilities[tuple(FAIL_state)])
 		if self.win_probabilities[tuple(XP_state)] < 0 or self.win_probabilities[tuple(TP_state)] < 0 or self.win_probabilities[tuple(FAIL_state)] < 0:
 			print("FUCK")
 		result = random()
@@ -55,11 +55,10 @@ class OptimalAgent(Agent):
 		for p in range(0,len(punt_model.classes)):
 			if punt_predictions[p] > 0:
 				new_state = next_state(current_state, punt_model.classes[p] * 5 + 5, runoff, 0)
-				pw_PUNT += punt_predictions[p] * self.win_probabilities[tuple(new_state)]
+				pw_PUNT += punt_predictions[p] * (1 - self.win_probabilities[tuple(new_state)])
 
-	
-		pw_FG = fg_model.predict(current_state[0] + 17) * self.win_probabilities[tuple(FG_state)] + \
-				(1 - fg_model.predict(current_state[0] + 17)) * self.win_probabilities[tuple(FAIL_state)]
+		pw_FG = fg_model.predict(current_state[0] + 17) * (1 - self.win_probabilities[tuple(FG_state)]) + \
+				(1 - fg_model.predict(current_state[0] + 17)) * (1 - self.win_probabilities[tuple(FAIL_state)])
 
 		if self.win_probabilities[tuple(FAIL_state)] < 0 or self.win_probabilities[tuple(FG_state)] < 0 or self.win_probabilities[tuple(GO_state)] < 0:
 			print("FUCK")
@@ -77,13 +76,13 @@ class OptimalAgent(Agent):
 				print("FUCK")
 
 			#probability of winning if decision is too kick XP
-			pw_XP = 0.95 * self.win_probabilities[tuple(XP_state)] + 0.05 * self.win_probabilities[tuple(PAT_FAIL_state)]
+			pw_XP = 0.95 * (1 - self.win_probabilities[tuple(XP_state)]) + 0.05 * (1 - self.win_probabilities[tuple(PAT_FAIL_state)])
 
 			#probability of winning if decision is to go for 2 point conversion
-			pw_2P = 0.5 * self.win_probabilities[tuple(TP_state)] + 0.5 * self.win_probabilities[tuple(PAT_FAIL_state)]
+			pw_2P = 1 - (0.5 * self.win_probabilities[tuple(TP_state)]) + 0.5 * (1 - self.win_probabilities[tuple(PAT_FAIL_state)])
 
 			#probabilty of winning if decision is to attempt a 4th down conversion
-			pw_GO = fd_model.predict(togo)[1] * max(pw_XP, pw_2P) + fd_model.predict(togo)[0] * self.win_probabilities[tuple(FAIL_state)]
+			pw_GO = fd_model.predict(togo)[1] * max(pw_XP, pw_2P) + fd_model.predict(togo)[0] * (1 - self.win_probabilities[tuple(FAIL_state)])
 
 			#going for it maxmizes win probability
 			if max(pw_GO, pw_PUNT, pw_FG) == pw_GO:
@@ -100,7 +99,7 @@ class OptimalAgent(Agent):
 		else:
 
 			#probability of winning if decision is to attempt a 4th down conversion
-			pw_GO = fd_model.predict(togo)[1] * self.win_probabilities[tuple(GO_state)] + fd_model.predict(togo)[0] * self.win_probabilities[tuple(FAIL_state)]
+			pw_GO = fd_model.predict(togo)[1] * self.win_probabilities[tuple(GO_state)] + fd_model.predict(togo)[0] * (1 - self.win_probabilities[tuple(FAIL_state)])
 
 			if max(pw_GO, pw_PUNT, pw_FG) == pw_GO:
 				conversion_result = random()
